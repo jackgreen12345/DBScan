@@ -1,0 +1,54 @@
+//聚类分析DBSCAN
+	publlic double cluster1(int[] rssi/*目标域*/,double radius/*半径*/,int minpts/*最小数量*/){
+		int i=0;
+		int q,flag=0,index=0,finish=0;
+		int rssir[]=new int[100];
+		ArrayList<Integer> lista = new ArrayList<Integer>(); //集合A 存放符合条件的值
+		ArrayList<Integer> listb = new ArrayList<Integer>(); //集合B 一个符合条件的值所带来的所有值 
+		ArrayList<Integer> listc = new ArrayList<Integer>(); //集合C 圆圈内的点
+		ArrayList<Integer> listv = new ArrayList<Integer>(); //集合V 访问过的值
+		listb.add(rssi[0]);
+		while ((!listb.isEmpty())||(lista.isEmpty())) {//未将集合B放完
+			
+			if ((flag==1)&&(listb.isEmpty())&&(lista.isEmpty())&&(index!=rssi.length-1)) {//刚开始
+				index++;
+				listb.add(rssi[index]);
+			}
+			if (index==rssi.length-1) break;
+			q=listb.get(0);
+			if (!listb.isEmpty()) listb.remove(0);
+			while ((listv.contains(q))&&(!listb.isEmpty())) {//集合B里的点被访问过，则取集合B中的下一个点
+				listb.remove(0);
+				if ((listb.isEmpty())&&(!lista.isEmpty())) {
+					finish=1;
+					listb.removeAll(listb);
+					break;
+				}
+				if (!listb.isEmpty()) q=listb.get(0);
+			}
+			if (finish==0)
+				{
+					
+					for (i=0;i<rssi.length;i++){//判断数组中的值是否在圆圈内
+						if ((rssi[i]>=q-radius)&&(rssi[i]<=q+radius))
+							listc.add(rssi[i]);
+					}
+					if (listc.size()>=minpts) {//数量是否达到最少值
+						lista.add(q);
+						listb.addAll(listc);
+					}
+					listc.removeAll(listc);
+					flag=1;
+					listv.add(q);//q被访问过
+				}
+		}
+		int k=0;
+		for (i=0;i<rssi.length;i++)
+			if (lista.contains(rssi[i]))
+				{
+					rssir[k]=rssi[i];
+					k++;
+				}
+		
+		return (gaussfilter(rssir));
+	}
